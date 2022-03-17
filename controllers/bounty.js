@@ -21,14 +21,16 @@ router.get("/", async (req, res) => {
 router.get("/:id", (req, res) => {
     const { id } = req.params;
 
-    db.Bounty.findById(id).then((foundBounty) => {
-        if (!foundBounty) {
-            return res.status(404).json({ message: "DB/Server Error!" });
-        }
-        res.json(foundBounty);
-    }).catch(err => {
-        res.status(503).json({ message: "DB/Server Error!" });
-    });
+    db.Bounty.findById(id)
+        .then((foundBounty) => {
+            if (!foundBounty) {
+                return res.status(404).json({ message: "DB/Server Error!" });
+            }
+            res.json(foundBounty);
+        })
+        .catch((err) => {
+            res.status(503).json({ message: "DB/Server Error!" });
+        });
 });
 
 // POST /bounties (insert a new bounty)
@@ -46,11 +48,43 @@ router.post("/", async (req, res) => {
 });
 
 // PUT /bounties/:id (update)
+router.put("/:id", async (req, res) => {
+    try {
+        // get id from request params
+        const { id } = req.params;
+        // make option to return updated obj
+        const options = {
+            new: true,
+        };
+        // find the bounty in the DB and update it
+        const updatedBounty = await db.Bounty.findOneAndUpdate(
+            { _id: id },
+            req.body,
+            options
+        );
+        console.log(updatedBounty);
+        res.json({ updatedBounty });
+    } catch (err) {
+        // handle error
+        console.log(err);
+        res.status(503).json({ message: "DB/Server Error!" });
+    }
+});
 
 // DELETE /bounties/:id (destroy)
 
-router.get("/", (req, res) => {
-    res.json({ message: "hello from bounty controller" });
+router.delete("/:id", (req, res) => {
+    // find doc and delete it
+    db.Bounty.findByIdAndDelete(req.params.id)
+        .then(() => {
+            // send a status + message that the delete was successful
+            res.status(204).json({ message: "bounty deleted" });
+        })
+        .catch((err) => {
+            // handle any errors
+            console.log("Error" + err);
+            res.status(503).json({ message: "something went wrong" });
+        });
 });
 
 module.exports = router;
