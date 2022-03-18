@@ -13,7 +13,7 @@ db.once("open", () => {
 });
 
 db.on("error", (err) => {
-    console.err("DB Error:", err);
+    console.error("DB Error:", err);
 });
 
 module.exports.Bounty = require('./bounty'); 
